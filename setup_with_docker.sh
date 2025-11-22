@@ -77,10 +77,7 @@ sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin dock
 
 sudo groupadd docker
 sudo usermod -aG docker $USER
-
-newgrp docker
-
-exit
+echo "User added to 'docker' group. Changes take effect after you log out and log back in, or after a reboot."
 
 # Reboot system
 echo "Rebooting system..."
