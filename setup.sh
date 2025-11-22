@@ -1,16 +1,5 @@
 #!/bin/bash
 
-# Function to pause and prompt for VMware Tools ISO insertion
-pause_for_vmtools() {
-    echo "Please insert the XCP-NG Tools ISO and press [Enter] when ready..."
-    read -r
-    mount /dev/cdrom /mnt
-    if [[ ! -d "/mnt" ]]; then
-        echo "Error: XCP-NG Tools ISO not found. Please insert the ISO and try again."
-        exit 1
-    fi
-}
-
 # Set system timezone to New York
 echo "Setting timezone to America/New_York..."
 sudo timedatectl set-timezone America/New_York
@@ -21,40 +10,44 @@ timedatectl
 echo "Cloning dotfiles repository..."
 git clone https://github.com/flipsidecreations/dotfiles.git
 cd dotfiles || exit
-echo "Running dotfiles installation script..."
+echo "Running dotfiles installation script as user..."
 ./install.sh
 
-# Change default shell to zsh
-echo "Changing default shell to zsh..."
+# Change default shell to zsh as user
+echo "Changing default shell to zsh (user)..."
 chsh -s /bin/zsh
-cd
+cd ~
 
-# Run setup steps as root in a subshell
-sudo bash <<'EOF'
+# Run required setup steps as root in a subshell
+sudo bash -c '
 # Clone dotfiles repository and run install script as root
+echo "Cloning dotfiles repository (root)..."
 git clone https://github.com/flipsidecreations/dotfiles.git
 cd dotfiles || exit
 echo "Running dotfiles installation script as root..."
 ./install.sh
 
 # Change default shell to zsh for root
-echo "Changing default shell to zsh for root..."
+echo "Changing default shell to zsh (root)..."
 chsh -s /bin/zsh
-cd
+cd ~
 
-# Pause and prompt for VMware Tools ISO if not already inserted
+# Prompt user to insert VM Tools ISO and wait
 echo "Please insert the XCP-NG Tools ISO and press [Enter] when ready..."
 read -r
+
+echo "Mounting CD-ROM..."
 mount /dev/cdrom /mnt
-if [[ ! -d "/mnt" ]]; then
-    echo "Error: XCP-NG Tools ISO not found. Please insert the ISO and try again."
+
+if [[ ! -d "/mnt/Linux" ]]; then
+    echo "Error: XCP-NG Tools ISO not found or not mounted correctly. Please check the ISO and try again."
     exit 1
 fi
 
 # Run VMware Tools installation
 echo "Running VMware Tools installation..."
 bash /mnt/Linux/install.sh && umount /mnt
-EOF
+'
 
 # Download and install topgrade
 echo "Downloading and installing topgrade..."
