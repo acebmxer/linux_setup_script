@@ -136,8 +136,8 @@ info "XCP‑NG Tools installation completed."
 # --------------------------------------------------------------------------- #
 # 6️⃣  Topgrade – download & install
 # --------------------------------------------------------------------------- #
-TOPGRADE_VERSION="v16.0.4"
-TOPGRADE_DEB="topgrade_${TOPGRADE_VERSION#v}_1_amd64.deb"
+TOPGRADE_VERSION="v16.0.4-1"
+TOPGRADE_DEB="topgrade_${TOPGRADE_VERSION#v}_amd64.deb"
 TOPGRADE_URL="https://github.com/topgrade-rs/topgrade/releases/download/${TOPGRADE_VERSION}/${TOPGRADE_DEB}"
 TOPGRADE_DEST="/tmp/${TOPGRADE_DEB}"
 
