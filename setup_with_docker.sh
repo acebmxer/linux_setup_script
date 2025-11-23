@@ -76,9 +76,9 @@ chsh -s "$(command -v zsh)" "$USER"
 info "Setting shell to zsh for root …"
 run_as_root usermod -s "$(command -v zsh)" root
 
-# ---------- ----------------------------------- #
+# ---------- --------------------------------------------------- #
 # 5️⃣  XCP‑NG Tools – conflict‑free install
-# ---------- ----------------------------------- #
+# ---------- --------------------------------------------------- #
 info "Installing XCP‑NG Tools …"
 
 # ------------------------------------------------------------------
@@ -104,17 +104,26 @@ mount_iso() {
 # ------------------------------------------------------------------
 ensure_installer() {
     if [[ ! -f /mnt/Linux/install.sh ]]; then
-        error "Installer script /mnt/Linux/install.sh not found. "
+        error "Installer script /mnt/Linux/install.sh not found."
         error "Make sure the ISO is correctly mounted and contains the installer."
         exit 1
     fi
 }
 
 # ------------------------------------------------------------------
+# Remove any existing xen‑guest‑agent that might conflict
+# ------------------------------------------------------------------
+remove_conflicting_packages() {
+    info "Removing any conflicting xen‑guest‑agent package…"
+    run_as_root apt-get remove -y xen-guest-agent || warn "Failed to remove xen-guest-agent (may not be installed)."
+}
+
+# ------------------------------------------------------------------
 # Execute the installation flow
 # ------------------------------------------------------------------
 mount_iso            # Mount the ISO if required
-ensure_installer     # Make sure the installer script is there
+ensure_installer     # Verify the installer is present
+remove_conflicting_packages  # ← **New step** before running the ISO installer
 
 # Run the ISO’s install script
 run_as_root bash /mnt/Linux/install.sh
