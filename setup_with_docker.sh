@@ -34,8 +34,8 @@ run_as_root dpkg-reconfigure -f noninteractive tzdata
 
 # ------------------------------------------------------------------
 # 2️⃣  Dotfiles ----------------------------------------------------
-DOTFILES_REPO="https://github.com/your-username/dotfiles.git"
-DOTFILES_DIR="$HOME/.dotfiles"
+DOTFILES_REPO="https://github.com/flipsidecreations/dotfiles.git"
+DOTFILES_DIR="$HOME/dotfiles"
 
 log "Cloning (or pulling) dotfiles repository into $DOTFILES_DIR"
 if [[ -d "$DOTFILES_DIR/.git" ]]; then
