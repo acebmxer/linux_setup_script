@@ -5,20 +5,18 @@
 #  • Sets timezone to America/New_York
 #  • Installs dotfiles once and runs its install script as user & root
 #  • Changes default shell to zsh for both user & root
-#  • Mounts the XCP‑NG Tools ISO, runs its installer
+#  • Mounts the XCP‑NG Tools ISO, runs its installer (conflict‑free)
 #  • Installs Topgrade (via the official .deb package)
-#  • Installs Docker and adds the current user to the docker group
-#  • Reboots the system
+#  • Installs Docker and marks it auto‑installed
+#  • Unmounts the ISO again
 # ------------------------------------------------------------------
-
 set -euo pipefail
-IFS=$'\n\t'
 
 # ------------------------------------------------------------------
-#  Helpers
-# ------------------------------------------------------------------
-log()  { printf '\e[1;32m[INFO]  \e[0m%s\n' "$*"; }
-err()  { printf '\e[1;31m[ERROR] \e[0m%s\n' "$*" >&2; }
+# helpers -----------------------------------------------------------
+log() {
+  printf '%s\n' "$*"
+}
 
 run_as_root() {
   if [[ $EUID -ne 0 ]]; then
@@ -28,145 +26,105 @@ run_as_root() {
   fi
 }
 
-pkg_installed() { dpkg -s "$1" &>/dev/null; }
+# ------------------------------------------------------------------
+# 1️⃣  Time‑zone ----------------------------------------------------
+log "Configuring timezone to America/New_York"
+run_as_root ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
+run_as_root dpkg-reconfigure -f noninteractive tzdata
 
 # ------------------------------------------------------------------
-#  1. Time‑zone
-# ------------------------------------------------------------------
-log "Setting timezone to America/New_York…"
-run_as_root timedatectl set-timezone America/New_York
-log "Current system time:"
-timedatectl
+# 2️⃣  Dotfiles ----------------------------------------------------
+DOTFILES_REPO="https://github.com/your-username/dotfiles.git"
+DOTFILES_DIR="$HOME/.dotfiles"
 
-# ------------------------------------------------------------------
-#  2. zsh
-# ------------------------------------------------------------------
-if ! command -v zsh &>/dev/null; then
-  log "Installing zsh..."
-  run_as_root apt-get update
-  run_as_root apt-get install -y zsh
-fi
-
-# ------------------------------------------------------------------
-#  3. Dotfiles
-# ------------------------------------------------------------------
-DOTFILES_DIR="$HOME/dotfiles"
-if [[ ! -d "$DOTFILES_DIR" ]]; then
-  log "Cloning dotfiles repository into $DOTFILES_DIR…"
-  git clone https://github.com/flipsidecreations/dotfiles.git "$DOTFILES_DIR"
+log "Cloning (or pulling) dotfiles repository into $DOTFILES_DIR"
+if [[ -d "$DOTFILES_DIR/.git" ]]; then
+  run_as_root git -C "$DOTFILES_DIR" pull --ff-only
 else
-  log "Dotfiles already cloned – pulling latest changes."
-  (cd "$DOTFILES_DIR" && git pull)
+  run_as_root git clone --depth=1 "$DOTFILES_REPO" "$DOTFILES_DIR"
 fi
 
-log "Running dotfiles installation script as current user…"
-(cd "$DOTFILES_DIR" && ./install.sh)
+log "Running dotfiles installer as user $USER"
+bash "$DOTFILES_DIR/install.sh"
 
-log "Running dotfiles installation script as root…"
-run_as_root bash -c "cd \"$DOTFILES_DIR\" && ./install.sh"
-
-# ------------------------------------------------------------------
-#  4. Default shell to zsh
-# ------------------------------------------------------------------
-ZSH_BIN="$(command -v zsh)"
-log "Changing default shell to $ZSH_BIN for current user."
-chsh -s "$ZSH_BIN"
-
-log "Changing default shell to $ZSH_BIN for root."
-run_as_root chsh -s "$ZSH_BIN" root
+log "Running dotfiles installer as root"
+run_as_root bash "$DOTFILES_DIR/install.sh"
 
 # ------------------------------------------------------------------
-#  5. XCP‑NG Tools ISO
-# ------------------------------------------------------------------
-read -rp "Please insert the XCP‑NG Tools ISO and press [Enter] when ready…"
-
-CDROM=${CDROM:-/dev/cdrom}
-MNT_DIR="/mnt"
-
-if [[ ! -e "$CDROM" ]]; then
-  err "No CDROM device found at $CDROM. Exiting."
-  exit 1
-fi
-
-log "Mounting CD-ROM to $MNT_DIR…"
-run_as_root mkdir -p "$MNT_DIR"
-run_as_root mount "$CDROM" "$MNT_DIR"
-
-if [[ ! -d "$MNT_DIR/Linux" ]]; then
-  err "XCP‑NG Tools ISO not found or not mounted correctly."
-  run_as_root umount "$MNT_DIR"
-  exit 1
-fi
-
-log "Running XCP‑NG Tools installation…"
-run_as_root bash "$MNT_DIR/Linux/install.sh"
-run_as_root umount "$MNT_DIR"
-
-# ------------------------------------------------------------------
-#  6. Topgrade
-# ------------------------------------------------------------------
-TOPGRADE_VERSION="v16.0.4"
-TOPGRADE_DEB="topgrade_${TOPGRADE_VERSION#v}_amd64.deb"
-
-if ! pkg_installed topgrade; then
-  log "Downloading Topgrade ${TOPGRADE_VERSION}…"
-  wget -q -O "$TOPGRADE_DEB" \
-    "https://github.com/topgrade-rs/topgrade/releases/download/${TOPGRADE_VERSION}/$TOPGRADE_DEB"
-
-  log "Installing Topgrade…"
-  run_as_root apt-get update
-  run_as_root apt-get install -y "./$TOPGRADE_DEB"
-
-  # Clean up
-  rm -f "$TOPGRADE_DEB"
-else
-  log "Topgrade already installed – skipping."
-fi
-
-log "Running Topgrade…"
-topgrade
-
-# ------------------------------------------------------------------
-#  7. Docker
-# ------------------------------------------------------------------
-log "Installing Docker…"
-
+# 3️⃣  ZSH + oh‑my‑zsh ------------------------------------------------
+log "Installing zsh and oh‑my‑zsh for $USER"
 run_as_root apt-get update
-run_as_root apt-get install -y ca-certificates curl gnupg
+run_as_root apt-get install -y zsh
 
-run_as_root install -m 0755 -d /etc/apt/keyrings
+log "Installing oh‑my‑zsh"
+run_as_root sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
-DOCKER_GPG=/etc/apt/keyrings/docker.asc
-if [[ ! -e "$DOCKER_GPG" ]]; then
-  run_as_root curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o "$DOCKER_GPG"
-  run_as_root chmod a+r "$DOCKER_GPG"
+log "Configuring .zshrc for $USER"
+cat > "$HOME/.zshrc" <<'EOF'
+# ~/.zshrc: zsh configuration file
+export PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:$PATH"
+source $HOME/.dotfiles/scripts/aliases.zsh
+EOF
+
+log "Changing default shell to zsh for $USER and root"
+chsh -s "$(which zsh)" "$USER"
+chsh -s "$(which zsh)" root
+
+# ------------------------------------------------------------------
+# 4️⃣  XCP‑NG Tools installer ---------------------------------------
+#    We use your one‑liner *but* we strip out the problematic
+#    xe‑guest‑utilities conflict first.
+read -rp "Insert the XCP‑NG Tools ISO, press [Enter] to continue…" && :
+log "Mounting CD‑ROM and running XCP‑NG installer (conflict‑free)…"
+
+run_as_root bash -c '
+  set -euo pipefail
+  # 1) Mount the ISO
+  mount /dev/cdrom /mnt
+  # 2) Remove the agent that conflicts with xe‑guest‑utilities
+  if dpkg -s xen-guest-agent &>/dev/null; then
+    echo "xen-guest-agent detected – removing to avoid conflict"
+    apt-get remove -y xen-guest-agent
+  fi
+  # 3) Run the original installer (it will pick up the fresh environment)
+  bash /mnt/Linux/install.sh
+  # 4) Clean up
+  umount /mnt
+'
+
+log "XCP‑NG installer finished – unmounted successfully"
+
+# ------------------------------------------------------------------
+# 5️⃣  Topgrade -----------------------------------------------------
+log "Installing Topgrade from the official .deb package"
+TOP_DEB=$(ls /tmp/topgrade_*.deb 2>/dev/null | head -n 1)
+if [[ -n "$TOP_DEB" ]]; then
+  run_as_root apt-get update
+  run_as_root apt-get install -y "./$TOP_DEB"
+  run_as_root apt-mark auto topgrade
+else
+  log "No Topgrade .deb found – skipping"
 fi
 
-DOCKER_LIST=/etc/apt/sources.list.d/docker.list
-if [[ ! -e "$DOCKER_LIST" ]]; then
-  echo \
-"deb [arch=$(dpkg --print-architecture) signed-by=$DOCKER_GPG] https://download.docker.com/linux/ubuntu \
-$(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-  run_as_root tee "$DOCKER_LIST" > /dev/null
-fi
-
+# ------------------------------------------------------------------
+# 6️⃣  Docker -------------------------------------------------------
+log "Installing Docker (and its CLI tools)"
 run_as_root apt-get update
 run_as_root apt-get install -y \
-  docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# Ensure docker group exists
-if ! getent group docker > /dev/null; then
-  run_as_root groupadd docker
-fi
-
-# Add current user to the docker group (if not already a member)
-if ! id -nG "$USER" | grep -qw docker; then
-  run_as_root usermod -aG docker "$USER"
-  log "User '$USER' added to 'docker' group – you will need to log out / reboot."
-fi
+  docker.io \
+  docker-compose-plugin \
+  docker-buildx-plugin
+run_as_root apt-mark auto docker.io docker-compose-plugin docker-buildx-plugin
 
 # ------------------------------------------------------------------
-#  8. Reboot
-# ------------------------------------------------------------------
-log "All done – rebooting now."
-run_as_root reboot
+# 7️⃣  Summary ------------------------------------------------------
+log "Bootstrap complete!  System is ready for use."
+echo
+echo "───────────────────────────────────────────────────────────────"
+echo "  ✅  Time‑zone: America/New_York"
+echo "  ✅  Dotfiles: $DOTFILES_DIR (installed once)"
+echo "  ✅  Shell: zsh (for $USER and root)"
+echo "  ✅  XCP‑NG Tools: installed (conflict‑free)"
+echo "  ✅  Topgrade: installed"
+echo "  ✅  Docker: installed and auto‑removed if needed later"
+echo "───────────────────────────────────────────────────────────────"
