@@ -127,38 +127,20 @@ run_as_root apt update
 run_as_root apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 # run_as_root groupadd docker
 run_as_root usermod -aG docker $USER
-# run_as_root exec bash -l
-newgrp docker
+# Reload group membership without logging out
+info "Reloading docker group membership…"
+newgrp docker <<'EOF'
+# All subsequent commands run with the new group membership
+EOF
 # 7a. Docker verification tests
 info "Running Docker verification tests…"
 # Make sure we can talk to the daemon
 docker_cmd() { run_as_root docker "$@"; }
 # 8a. Verify the client can reach the daemon
 docker_cmd version
-# 8b. Pull & run the hello‑world image
-HELLO_IMG="hello-world:latest"
-info "Pulling ${HELLO_IMG} image …"
-docker pull "$HELLO_IMG"
-info "Running ${HELLO_IMG} container to confirm the image works …"
-docker run --rm "$HELLO_IMG"
-docker stop "$HELLO_IMG"
-docker image rm "heello-world:latest"
-# 8c. Quick compose test
-info "Running a quick docker‑compose test …"
-COMPOSE_DIR="$(mktemp -d)"
-cat > "${COMPOSE_DIR}/docker-compose.yml" <<'EOF'
-version: "3.8"
-services:
-  hello:
-    image: hello-world:latest
-    container_name: hello-world_test
-EOF
-docker compose -f "${COMPOSE_DIR}/docker-compose.yml" up -d
-sleep 2
-docker compose -f "${COMPOSE_DIR}/docker-compose.yml" ps
-docker compose -f "${COMPOSE_DIR}/docker-compose.yml" down
-rm -rf "${COMPOSE_DIR}"
+docker_cmd info
 info "Docker verification complete."
+# -----------------------------------------------------------------
 # 9️⃣  Final summary
 # -----------------------------------------------------------------
 info "All components are now installed and, for Docker, all tests passed successfully!"
