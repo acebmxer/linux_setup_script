@@ -96,23 +96,17 @@ info "XCP‑NG Tools installation completed."
 # -----------------------------------------------------------------
 # 6️⃣  Topgrade – download & install
 # -----------------------------------------------------------------
-TOPGRADE_VERSION="v16.4.2"
-TOPGRADE_DEB="topgrade_${TOPGRADE_VERSION}-1_amd64.deb"
+TOPGRADE_VERSION="16.4.2-1"
 TOPGRADE_URL="https://github.com/topgrade-rs/topgrade/releases/download/v16.4.2/topgrade_16.4.2-1_amd64.deb"
-TOPGRADE_DEST="$HOME"
 download_topgrade() {
     info "Downloading Topgrade ($TOPGRADE_VERSION) …"
-    run_as_root wget -q --show-progress "$TOPGRADE_DEST" "$TOPGRADE_URL"
+    wget -q --show-progress "https://github.com/topgrade-rs/topgrade/releases/download/v16.4.2/topgrade_16.4.2-1_amd64.deb"
 }
 install_topgrade() {
-    local deb="$1"
-    info "Installing Topgrade from $deb …"
-    run_as_root apt-get update
-    run_as_root apt-get install -y "./$deb"
-    run_as_root apt-mark auto topgrade
+    run_as_root apt install ./topgrade_16.4.2-1_amd64.deb
 }
 download_topgrade
-install_topgrade "$TOPGRADE_DEST"
+install_topgrade 
 
 # -----------------------------------------------------------------
 # 👉  **Run Topgrade immediately after installation**
