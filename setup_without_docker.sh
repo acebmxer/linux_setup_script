@@ -23,11 +23,7 @@ run_as_root() {
         sudo "$@"
     fi
 }
-# 1️⃣  Timezone
 # -----------------------------------------------------------------
-info "Setting timezone to America/New_York …"
-run_as_root ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
-run_as_root dpkg-reconfigure -f noninteractive tzdata
 # 2️⃣  Basic packages
 # -----------------------------------------------------------------
 info "Updating APT cache …"
@@ -41,6 +37,12 @@ run_as_root apt-get install -y \
     gnupg2 \
     lsb-release \
     sudo
+# -----------------------------------------------------------------
+# 1️⃣  Timezone
+# -----------------------------------------------------------------
+info "Setting timezone to America/New_York …"
+run_as_root ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+run_as_root dpkg-reconfigure -f noninteractive tzdata
 # -----------------------------------------------------------------
 # 3️⃣  Dotfiles – install once
 # -----------------------------------------------------------------
