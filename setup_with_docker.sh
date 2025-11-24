@@ -93,6 +93,7 @@ remove_conflicting_packages
 run_as_root bash /mnt/Linux/install.sh
 run_as_root umount /mnt || warn "Failed to unmount /mnt – you may need to unmount it manually."
 info "XCP‑NG Tools installation completed."
+# -----------------------------------------------------------------
 # 6️⃣  Topgrade – download & install
 # -----------------------------------------------------------------
 TOPGRADE_VERSION="v16.4.2"
@@ -101,7 +102,7 @@ TOPGRADE_URL="https://github.com/topgrade-rs/topgrade/releases/download/${TOPGRA
 TOPGRADE_DEST="$HOME/${TOPGRADE_DEB}"
 download_topgrade() {
     info "Downloading Topgrade ($TOPGRADE_VERSION) …"
-    run_as_root wget -q --show-progress -O "$TOPGRADE_DEST" "$TOPGRADE_URL" || { error "Failed to download Topgrade"; exit 1; }
+    run_as_root wget -q --show-progress -O "https://github.com/topgrade-rs/topgrade/releases/download/v16.4.2/topgrade_16.4.2-1_amd64.deb" || { error "Failed to download Topgrade"; exit 1; }
 }
 install_topgrade() {
     local deb="$1"
