@@ -164,15 +164,55 @@ download_topgrade
 install_topgrade "$TOPGRADE_DEST"
 
 # --------------------------------------------------------------------------- #
-# 7️⃣  Docker – install & enable
-# --------------------------------------------------------------------------- #
-info "Installing Docker …"
-run_as_root apt-get install -y \
-    docker.io \
-    docker-compose
+# 7️⃣  Docker – install & enable (official Docker repo)
+# -----------------------------------------------
+info "Installing Docker from Docker’s official APT repository …"
 
+# 1️⃣  Update cache – this will be needed twice, once before the key
+#     and once after the repo is added
+run_as_root apt-get update
+
+# 2️⃣  Install dependencies required for the Docker repo
+run_as_root apt-get install -y ca-certificates curl
+
+# 3️⃣  Create key‑ring directory (if it doesn't exist yet)
+run_as_root install -m 0755 -d /etc/apt/keyrings
+
+# 4️⃣  Download Docker’s official GPG key into the key‑ring
+run_as_root curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+    -o /etc/apt/keyrings/docker.asc
+run_as_root chmod a+r /etc/apt/keyrings/docker.asc
+
+# 5️⃣  Add the Docker repository
+run_as_root sh -c \
+'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+https://download.docker.com/linux/ubuntu \
+$(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" \
+> /etc/apt/sources.list.d/docker.list'
+
+# 6️⃣  Update again to pick up the new repo
+run_as_root apt-get update
+
+# 7️⃣  Install Docker‑CE (and the newer “plugin” style Compose)
+run_as_root apt-get install -y \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin
+
+# 8️⃣  Ensure the `docker` group exists (Docker‑CE creates it on install,
+#     but we keep this for safety)
+run_as_root groupadd -f docker
+
+# 9️⃣  Add the current user to the `docker` group
 run_as_root usermod -aG docker "$USER"
-run_as_root systemctl enable docker
+
+# (Optional) Immediately apply the new group membership in the current shell
+# Comment out if you prefer a reboot / relogin instead
+run_as_root newgrp docker
+
+info "Docker installed and user `$USER` added to the docker group."
 
 # --------------------------------------------------------------------------- #
 # 8️⃣  Summary
