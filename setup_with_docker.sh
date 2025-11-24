@@ -98,11 +98,11 @@ info "XCP‑NG Tools installation completed."
 # -----------------------------------------------------------------
 TOPGRADE_VERSION="v16.4.2"
 TOPGRADE_DEB="topgrade_${TOPGRADE_VERSION}-1_amd64.deb"
-TOPGRADE_URL="https://github.com/topgrade-rs/topgrade/releases/download/${TOPGRADE_VERSION}/${TOPGRADE_DEB}"
-TOPGRADE_DEST="$HOME/${TOPGRADE_DEB}"
+TOPGRADE_URL="https://github.com/topgrade-rs/topgrade/releases/download/v16.4.2/topgrade_16.4.2-1_amd64.deb"
+TOPGRADE_DEST="$HOME"
 download_topgrade() {
     info "Downloading Topgrade ($TOPGRADE_VERSION) …"
-    run_as_root wget -q --show-progress -O "https://github.com/topgrade-rs/topgrade/releases/download/v16.4.2/topgrade_16.4.2-1_amd64.deb" || { error "Failed to download Topgrade"; exit 1; }
+    run_as_root wget -q --show-progress -O "$TOPGRADE_DEST" "$TOPGRADE_URL" || { error "Failed to download Topgrade"; exit 1; }
 }
 install_topgrade() {
     local deb="$1"
