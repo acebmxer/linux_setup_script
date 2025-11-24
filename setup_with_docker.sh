@@ -44,7 +44,7 @@ run_as_root apt-get install -y \
 # -----------------------------------------------------------------
 # 3️⃣  Dotfiles – install once
 # -----------------------------------------------------------------
-echo "Starting as regular user"
+info "Starting as regular user"
 git clone https://github.com/flipsidecreations/dotfiles.git
 cd dotfiles
 ./install.sh
@@ -53,13 +53,13 @@ chsh -s /bin/zsh
 #    Dotfiles - Install for root
 # -----------------------------------------------------------------
 sudo -s <<EOF
-echo "Now running as root"
+info "Now running as root"
 git clone https://github.com/flipsidecreations/dotfiles.git
 cd dotfiles
 ./install.sh
 chsh -s /bin/zsh
 EOF
-echo "Back to regular user."
+infosudo "Back to regular user."
 # -----------------------------------------------------------------
 # 5️⃣  XCP‑NG Tools – conflict‑free install
 # -----------------------------------------------------------------
@@ -127,7 +127,8 @@ run_as_root apt update
 run_as_root apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 run_as_root groupadd docker
 run_as_root usermod -aG docker $USER
-run_as_root exec bash -l
+# run_as_root exec bash -l
+exec su -l "$USER"
 # 7a. Docker verification tests
 info "Running Docker verification tests…"
 # Make sure we can talk to the daemon
