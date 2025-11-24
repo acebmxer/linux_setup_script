@@ -51,12 +51,11 @@ chsh -s /bin/zsh
 # -----------------------------------------------------------------
 #    Dotfiles - Install for root
 # -----------------------------------------------------------------
-sudo -i
+sudo -s
 git clone https://github.com/flipsidecreations/dotfiles.git
 cd dotfiles
 ./install.sh
 chsh -s /bin/zsh
-exit
 # -----------------------------------------------------------------
 # 5️⃣  XCP‑NG Tools – conflict‑free install
 # -----------------------------------------------------------------
