@@ -125,7 +125,7 @@ run_as_root curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg -
 run_as_root echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 run_as_root apt update
 run_as_root apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
-run_as_root groupadd docker
+# run_as_root groupadd docker
 run_as_root usermod -aG docker $USER
 # run_as_root exec bash -l
 exec su -l "$USER"
