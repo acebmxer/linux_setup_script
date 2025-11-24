@@ -41,24 +41,23 @@ run_as_root apt-get install -y \
     gnupg2 \
     lsb-release \
     sudo
+# -----------------------------------------------------------------
 # 3️⃣  Dotfiles – install once
 # -----------------------------------------------------------------
-DOTFILES_DIR="$HOME/dotfiles"
-if [[ ! -d "$DOTFILES_DIR" ]]; then
-    info "Cloning dotfiles repository …"
-    run_as_root git clone --depth 1 https://github.com/flipsidecreations/dotfiles.git "$DOTFILES_DIR"
-    run_as_root chown -R "$USER":"$USER" "$DOTFILES_DIR"
-else
-    info "Dotfiles already present – skipping clone"
-fi
-info "Running dotfiles installer (once) …"
-run_as_root bash "$DOTFILES_DIR/install.sh" --once
-# 4️⃣  Shell – zsh for user and root
+git clone https://github.com/flipsidecreations/dotfiles.git
+cd dotfiles
+./install.sh
+chsh -s /bin/zsh
 # -----------------------------------------------------------------
-info "Setting shell to zsh for the current user …"
-chsh -s "$(command -v zsh)" "$USER"
-info "Setting shell to zsh for root …"
-run_as_root usermod -s "$(command -v zsh)" root
+#    Dotfiles - Install for root
+# -----------------------------------------------------------------
+sudo -i
+git clone https://github.com/flipsidecreations/dotfiles.git
+cd dotfiles
+./install.sh
+chsh -s /bin/zsh
+exit
+# -----------------------------------------------------------------
 # 5️⃣  XCP‑NG Tools – conflict‑free install
 # -----------------------------------------------------------------
 info "Installing XCP‑NG Tools …"
@@ -125,6 +124,7 @@ run_as_root apt update
 run_as_root apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 run_as_root groupadd docker
 run_as_root usermod -aG docker $USER
+run_as_root exec bash -l
 # 7a. Docker verification tests
 info "Running Docker verification tests…"
 # Make sure we can talk to the daemon
