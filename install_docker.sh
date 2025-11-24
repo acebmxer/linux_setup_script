@@ -47,9 +47,11 @@ run_as_root apt update
 run_as_root apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 # run_as_root groupadd docker
 run_as_root usermod -aG docker $USER
-# run_as_root exec bash -l
-exec su -l "$USER"
-# newgrp docker
+# Reload group membership without logging out
+info "Reloading docker group membership…"
+newgrp docker <<'EOF'
+# All subsequent commands run with the new group membership
+EOF
 # 7a. Docker verification tests
 info "Running Docker verification tests…"
 # Make sure we can talk to the daemon
