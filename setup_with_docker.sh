@@ -102,7 +102,7 @@ TOPGRADE_URL="https://github.com/topgrade-rs/topgrade/releases/download/v16.4.2/
 TOPGRADE_DEST="$HOME"
 download_topgrade() {
     info "Downloading Topgrade ($TOPGRADE_VERSION) …"
-    run_as_root wget -q --show-progress "$TOPGRADE_DEST" "$TOPGRADE_URL" || { error "Failed to download Topgrade"; exit 1; }
+    run_as_root wget -q --show-progress "$TOPGRADE_DEST" "$TOPGRADE_URL"
 }
 install_topgrade() {
     local deb="$1"
