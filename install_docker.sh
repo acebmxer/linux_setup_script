@@ -48,7 +48,7 @@ run_as_root apt install docker-ce docker-ce-cli containerd.io docker-buildx-plug
 # run_as_root groupadd docker
 run_as_root usermod -aG docker $USER
 # run_as_root exec bash -l
-run_as_root exec su -l "$USER"
+exec su -l "$USER"
 # newgrp docker
 # 7a. Docker verification tests
 info "Running Docker verification tests…"
