@@ -10,4 +10,4 @@ wget https://raw.githubusercontent.com/acebmxer/linux_install_script/main/setup.
 wget https://raw.githubusercontent.com/acebmxer/linux_install_script/main/setup_with_docker.sh && chmod +x setup_with_docker.sh && bash setup_with_docker.sh
 
 ### Install Docker
-wget https://raw.githubusercontent.com/acebmxer/linux_install_script/main/install_docker.sh && chmod +x setup_with_docker.sh && bash install_docker.sh
+wget https://raw.githubusercontent.com/acebmxer/linux_install_script/main/install_docker.sh && chmod +x install_docker.sh && bash install_docker.sh
