@@ -95,7 +95,7 @@ run_as_root umount /mnt || warn "Failed to unmount /mnt – you may need to unmo
 info "XCP‑NG Tools installation completed."
 # 6️⃣  Topgrade – download & install
 # -----------------------------------------------------------------
-TOPGRADE_VERSION="v16.0.4"
+TOPGRADE_VERSION="v16.4.2"
 TOPGRADE_DEB="topgrade_${TOPGRADE_VERSION}-1_amd64.deb"
 TOPGRADE_URL="https://github.com/topgrade-rs/topgrade/releases/download/${TOPGRADE_VERSION}/${TOPGRADE_DEB}"
 TOPGRADE_DEST="$HOME/${TOPGRADE_DEB}"
