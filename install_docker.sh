@@ -23,6 +23,19 @@ run_as_root() {
         sudo "$@"
     fi
 }
+# 2️⃣  Basic packages
+# -----------------------------------------------------------------
+info "Updating APT cache …"
+run_as_root apt-get update -y
+info "Installing required packages …"
+run_as_root apt-get install -y \
+    curl \
+    wget \
+    git \
+    ca-certificates \
+    gnupg2 \
+    lsb-release \
+    sudo
 # -----------------------------------------------------------------
 # 7️⃣  Docker – install & verify
 # -----------------------------------------------------------------
