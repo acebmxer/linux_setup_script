@@ -4,7 +4,7 @@ Script to run after fresh linux install
 This scrtip sets the timezone to Est, install dotfile, and XCP-NG tools. It also install topgrade to fully update the system.
 
 ### With out Docker
-wget https://raw.githubusercontent.com/acebmxer/linux_install_script/main/setup.sh && chmod +x setup.sh && bash setup.sh
+wget https://raw.githubusercontent.com/acebmxer/linux_install_script/main/setup_without_docker.sh && chmod +x setup_without_docker.sh && bash setup_without_docker.sh
 
 ### With Docker
 wget https://raw.githubusercontent.com/acebmxer/linux_install_script/main/setup_with_docker.sh && chmod +x setup_with_docker.sh && bash setup_with_docker.sh
