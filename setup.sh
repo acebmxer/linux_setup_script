@@ -1,63 +1,45 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# ------------------------------------------------------------
+# setup.sh
+# Prompt the user for one of three actions and run the
+# appropriate script.
+# ------------------------------------------------------------
 
-# Set system timezone to New York
-echo "Setting timezone to America/New_York..."
-sudo timedatectl set-timezone America/New_York
-echo "Current system time:"
-timedatectl
+# Clear the terminal for a cleaner look
+clear
 
-# Clone dotfiles repository and run install script as user
-echo "Cloning dotfiles repository..."
-git clone https://github.com/flipsidecreations/dotfiles.git
-cd dotfiles || exit
-echo "Running dotfiles installation script as user..."
-./install.sh
+# Show the menu
+echo "To begin select of 1 of 3 options."
+echo "1.  To install without Docker."
+echo
+echo "2.  To install with Docker"
+echo
+echo "3.  To make no changes and Exit."
 
-# Change default shell to zsh as user
-echo "Changing default shell to zsh (user)..."
-chsh -s /bin/zsh
-cd ~
+# Read the user’s choice
+read -rp "Enter choice [1-3]: " choice
 
-# Run required setup steps as root in a subshell
-sudo bash -c '
-# Clone dotfiles repository and run install script as root
-echo "Cloning dotfiles repository (root)..."
-git clone https://github.com/flipsidecreations/dotfiles.git
-cd dotfiles || exit
-echo "Running dotfiles installation script as root..."
-./install.sh
-
-# Change default shell to zsh for root
-echo "Changing default shell to zsh (root)..."
-chsh -s /bin/zsh
-cd ~
-
-# Prompt user to insert VM Tools ISO and wait
-echo "Please insert the XCP-NG Tools ISO and press [Enter] when ready..."
-read -r
-
-echo "Mounting CD-ROM..."
-mount /dev/cdrom /mnt
-
-if [[ ! -d "/mnt/Linux" ]]; then
-    echo "Error: XCP-NG Tools ISO not found or not mounted correctly. Please check the ISO and try again."
-    exit 1
-fi
-
-# Run XCP-NG Tools installation
-echo "Running XCP-NG Tools installation..."
-bash /mnt/Linux/install.sh && umount /mnt
-'
-
-# Download and install topgrade
-echo "Downloading and installing topgrade..."
-wget https://github.com/topgrade-rs/topgrade/releases/download/v16.0.4/topgrade_16.0.4-1_amd64.deb
-sudo apt install ./topgrade_16.0.4-1_amd64.deb
-
-# Run topgrade
-echo "Running topgrade..."
-topgrade
-
-# Reboot system
-echo "Rebooting system..."
-sudo reboot
+# Decide what to do
+case "$choice" in
+    1)
+        echo "You chose: install without Docker."
+        echo "Running setup_without_docker.sh ..."
+        # Make sure the script is executable
+        chmod +x ./setup_without_docker.sh
+        ./setup_without_docker.sh
+        ;;
+    2)
+        echo "You chose: install with Docker."
+        echo "Running setup_with_docker.sh ..."
+        chmod +x ./setup_with_docker.sh
+        ./setup_with_docker.sh
+        ;;
+    3)
+        echo "You chose: exit. No changes will be made."
+        exit 0
+        ;;
+    *)
+        echo "❌  Invalid choice. Exiting."
+        exit 1
+        ;;
+esac
