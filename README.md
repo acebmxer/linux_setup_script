@@ -14,13 +14,4 @@ SETUP_THEME=light ./setup.sh
 ### Force a dark theme
 SETUP_THEME=dark ./setup.sh
 
-# 
-
-### With out Docker
-wget https://raw.githubusercontent.com/acebmxer/linux_setup_script/main/setup_without_docker.sh && chmod +x setup_without_docker.sh && bash setup_without_docker.sh
-
-### With Docker
-wget https://raw.githubusercontent.com/acebmxer/linux_setup_script/main/setup_with_docker.sh && chmod +x setup_with_docker.sh && bash setup_with_docker.sh
-
-### Install Docker
-wget https://raw.githubusercontent.com/acebmxer/linux_setup_script/main/install_docker.sh && chmod +x install_docker.sh && bash install_docker.sh
+Each script file can be ran seuperalty if you wanted to.
