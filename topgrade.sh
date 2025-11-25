@@ -191,32 +191,36 @@ remove_conflicting_packages
 # --------------------------------------------------------------
 # Mount the ISO if it isn’t already mounted
 # --------------------------------------------------------------
+info "Installing XCP‑NG Tools …"
 mount_iso() {
-if mountpoint -q /mnt; then
-info "ISO already mounted at /mnt."
-else
-warn "ISO not mounted. Please insert the XCP‑NG ISO and press Enter to continue…"
-read -r
-run_as_root mount /dev/cdrom /mnt || { error "Failed to mount /dev/cdrom"; exit 1; }
-if ! mountpoint -q /mnt; then
-error "Mounting /dev/cdrom failed."
-exit 1
-fi
-info "ISO mounted successfully."
-fi
-return 0
+    if mountpoint -q /mnt; then
+        info "ISO already mounted at /mnt."
+    else
+        warn "ISO not mounted. Please insert the XCP‑NG ISO and press Enter to continue…"
+        read -r
+        run_as_root mount /dev/cdrom /mnt || { error "Failed to mount /dev/cdrom"; exit 1; }
+        if ! mountpoint -q /mnt; then
+            error "Mounting /dev/cdrom failed."
+            exit 1
+        fi
+        info "ISO mounted successfully."
+    fi
 }
-
-# --------------------------------------------------------------
-# Mount the ISO if it isn’t already mounted
-# --------------------------------------------------------------
+ensure_installer() {
+    if [[ ! -f /mnt/Linux/install.sh ]]; then
+        error "Installer script /mnt/Linux/install.sh not found."
+        error "Make sure the ISO is correctly mounted and contains the installer."
+        exit 1
+    fi
+}
+remove_conflicting_packages() {
+    info "Removing any conflicting xen‑guest‑agent package…"
+    run_as_root apt-get remove -y xen-guest-agent || warn "Failed to remove xen-guest-agent (may not be installed)."
+}
 mount_iso
-
 ensure_installer
 remove_conflicting_packages
-info "Running the XCP‑NG installer script..."
 run_as_root bash /mnt/Linux/install.sh
-# Unmount the ISO (best effort)
 run_as_root umount /mnt || warn "Failed to unmount /mnt – you may need to unmount it manually."
 # Wait a bit so the system settles
 info "Pausing for 10 seconds to let services start..."
