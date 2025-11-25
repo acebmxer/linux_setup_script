@@ -66,7 +66,7 @@ cd dotfiles
 ./install.sh
 chsh -s /bin/zsh
 EOF
-infosudo "Back to regular user."
+info "Back to regular user."
 # ────────────────────────────────────────────────────────
 # 7️⃣ System pre‑upgrade (optional but handy)
 # ────────────────────────────────────────────────────────
