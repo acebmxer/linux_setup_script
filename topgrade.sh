@@ -246,3 +246,4 @@ if [[ "$ans" =~ ^[Yy]$ ]]; then
 else
     info "You can reboot later whenever you’re ready."
 fi
+exit 0
