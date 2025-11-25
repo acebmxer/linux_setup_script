@@ -1,7 +1,5 @@
-@@ -1,213 +1,213 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 # ────────────────────────────────────────────────────────
 # 1️⃣ Helpers – keep the same colour‑coded log functions
 # ────────────────────────────────────────────────────────
@@ -9,7 +7,6 @@ run_as_root() { sudo -E "$@"; }
 info()        { printf '\e[32m[INFO]\e[0m %s\n' "$*"; }
 warn()        { printf '\e[33m[WARN]\e[0m %s\n' "$*"; }
 error()       { printf '\e[31m[ERROR]\e[0m %s\n' "$*" >&2; }
-
 # ────────────────────────────────────────────────────────
 # 2️⃣ Idempotency helper
 # ────────────────────────────────────────────────────────
@@ -17,7 +14,6 @@ needs_update() {
 local flag_file="$1"
 [[ ! -f "$flag_file" ]] && return 0 || return 1
 }
-
 # ────────────────────────────────────────────────────────
 # 3️⃣ Timezone – only set if not already America/New_York
 # ────────────────────────────────────────────────────────
@@ -30,7 +26,6 @@ run_as_root dpkg-reconfigure -f noninteractive tzdata
 else
 info "Timezone already set to America/New_York – skipping."
 fi
-
 # ────────────────────────────────────────────────────────
 # 4️⃣ Ensure deb-get is installed
 # ────────────────────────────────────────────────────────
@@ -47,7 +42,6 @@ info "deb-get is already installed."
 fi
 }
 ensure_deb_get_installed
-
 # ────────────────────────────────────────────────────────
 # 5️⃣ Dotfiles – install for the regular user
 # ────────────────────────────────────────────────────────
@@ -73,7 +67,6 @@ info "Back to regular user."
 # ────────────────────────────────────────────────────────
 info "Running a quick apt‑update before topgrade."
 run_as_root apt-get update
-
 # ────────────────────────────────────────────────────────
 # 8️⃣ System upgrade – Topgrade (idempotent)
 # ────────────────────────────────────────────────────────
@@ -85,11 +78,9 @@ deb-get upgrade topgrade
 else
 info "Topgrade has been installed or has been updated."
 fi
-
 info "Running topgrade …"
 # Run as the user; Topgrade will auto‑install missing packages
-topgrade
-
+topgrade -y
 # ────────────────────────────────────────────────────────
 # 9️⃣ xen‑guest‑utilities – install / upgrade (root)
 # ────────────────────────────────────────────────────────
@@ -118,7 +109,7 @@ fi
 return 0        # Signal: install
 }
 # --------------------------------------------------------------
-# NEW: Check / uninstall / keep `xen-guest-agent`
+# NEW: Check / uninstall / keep xen‑guest‑agent
 # --------------------------------------------------------------
 check_and_handle_xen_guest_agent() {
 if dpkg -s xen-guest-agent > /dev/null 2>&1; then
@@ -172,23 +163,55 @@ if ! mountpoint -q /mnt; then
 error "Mounting /dev/cdrom failed."
 exit 1
 fi
-info "ISO mounted successfully."
+info "ISO eradicating successfully."
 fi
+return 0
 }
+
 # --------------------------------------------------------------
-# 3️⃣  Make sure the installer script is present
+# Function to remove conflicting packages
 # --------------------------------------------------------------
-ensure_installer() {
-if [[ ! -f /mnt/Linux/install.sh ]]; then
-error "Installer script /mnt/Linux/install.sh not found."
-error "Make sure the ISO is correctly mounted and contains the installer."
+remove_conflicting_packages() {
+  info "Removing potential conflicting packages..."
+
+  # Remove VMware tools
+  run_as_root apt-get purge -y open-vm-tools
+
+  # Remove KVM packages (if present)
+  run_as_root apt-get purge -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
+
+  info "Conflicting packages removal completed."
+}
+
+# --------------------------------------------------------------
+# Call the function to remove conflicting packages
+# --------------------------------------------------------------
+remove_conflicting_packages
+
+# --------------------------------------------------------------
+# Mount the ISO if it isn’t already mounted
+# --------------------------------------------------------------
+mount_iso() {
+if mountpoint -q /mnt; then
+info "ISO already mounted at /mnt."
+else
+warn "ISO not mounted. Please insert the XCP‑NG ISO and press Enter to continue…"
+read -r
+run_as_root mount /dev/cdrom /mnt || { error "Failed to mount /dev/cdrom"; exit 1; }
+if ! mountpoint -q /mnt; then
+error "Mounting /dev/cdrom failed."
 exit 1
 fi
+info "ISO mounted successfully."
+fi
+return 0
 }
+
 # --------------------------------------------------------------
-# 5️⃣  Run the installation
+# Mount the ISO if it isn’t already mounted
 # --------------------------------------------------------------
 mount_iso
+
 ensure_installer
 remove_conflicting_packages
 info "Running the XCP‑NG installer script..."
