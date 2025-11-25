@@ -24,8 +24,9 @@ deb-get update topgrade
 # Removed the if error block
 info "Running topgrade …"
 # Run as the user; Topgrade will auto‑install missing packages
-topgrade --yes 
-topgrade --cleanup
+topgrade -y
+info "Running topgrade cleanup …"
+topgrade -c
 # -----------------------------------------------------------------
 #  🔄  Reboot prompt – now or later?
 # -----------------------------------------------------------------
