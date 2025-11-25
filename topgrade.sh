@@ -63,7 +63,7 @@ cd dotfiles
 ./install.sh
 chsh -s /bin/zsh
 EOF
-infosudo "Back to regular user."
+info "Back to regular user."
 # Call the helper before any topgrade logic
 ensure_deb_get_installed
 # ------------------------------------------------------------------
