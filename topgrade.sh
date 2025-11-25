@@ -23,8 +23,7 @@ run_as_root() {
 # Ensure dependencies are installed
 run_as_root apt install -y curl lsb-release wget
 run_as_root curl -sL https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get | run_as_root -E bash -s install deb-get
-
-# Redefine info() and error() *after* deb-get is installed
+# Redefine info() and error() _after_ deb-get is installed
 info() {
   echo "INFO: $1"
 }
@@ -32,15 +31,9 @@ error() {
   echo "ERROR: $1"
   exit 1
 }
-
 info "Installing topgrade"
 deb-get install topgrade
-if error; then
-  info "Updating topgrade to the newest deb-get‑supplied version …"
-  deb-get upgrade topgrade
-else
-  info "Topgrade has been installed or has been updated."
-fi
+# Removed the if error block
 info "Running topgrade …"
 # Run as the user; Topgrade will auto‑install missing packages
 topgrade --yes --cleanup
