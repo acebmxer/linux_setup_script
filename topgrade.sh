@@ -3,9 +3,9 @@
 # Self‑contained wrapper for the Topgrade installation script
 # ------------------------------------------------------------------
 #
-# This script keeps *exactly* the code you supplied, adding only the
+# This script keeps _exactly_ the code you supplied, adding only the
 # minimal scaffolding required for it to run as a stand‑alone
-# executable.  All functions are defined *before* the snippet so that
+# executable.  All functions are defined _before_ the snippet so that
 # the original logic remains untouched.
 #
 # Usage:
@@ -15,19 +15,41 @@
 #
 # Note: The script assumes you have `sudo` configured for your user.
 # ------------------------------------------------------------------
-
 set -euo pipefail
 
-# ----- Helper functions -------------------------------------------------
+# ------------------------------------------------------------------
+# Helper functions
+# ------------------------------------------------------------------
 run_as_root() { sudo -E "$@"; }
 info()        { printf '\e[32m[INFO]\e[0m %s\n' "$*"; }
 warn()        { printf '\e[33m[WARN]\e[0m %s\n' "$*"; }
 error()       { printf '\e[31m[ERROR]\e[0m %s\n' "$*" >&2; }
 
-# ---------- Desired Topgrade version ----------
+# ------------------------------------------------------------------
+# Ensure deb‑get is present (minimal change to your original script)
+# ------------------------------------------------------------------
+ensure_deb_get_installed() {
+    if ! command -v deb-get >/dev/null 2>&1; then
+        info "deb‑get not found – installing prerequisites."
+        run_as_root apt-get update
+        run_as_root apt-get install -y curl lsb-release wget
+        info "Installing deb‑get."
+        curl -sL https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get | sudo -E bash -s install deb-get
+    else
+        info "deb‑get is already installed."
+    fi
+}
+# Call the helper before any topgrade logic
+ensure_deb_get_installed
+
+# ------------------------------------------------------------------
+# Desired Topgrade version
+# ------------------------------------------------------------------
 REQUIRED_TOPGRADE_VERSION="2.3.0"
 
-# ---------- Helper to decide if an update is needed ----------
+# ------------------------------------------------------------------
+# Helper to decide if an update is needed
+# ------------------------------------------------------------------
 needs_topgrade_update() {
     if ! command -v topgrade >/dev/null 2>&1; then
         info "Topgrade not found – will install."
@@ -49,7 +71,9 @@ needs_topgrade_update() {
     return 1
 }
 
-# ---------- 6️⃣  Topgrade – download & install (idempotent + version check) ----------
+# ------------------------------------------------------------------
+# 6️⃣  Topgrade – download & install (idempotent + version check)
+# ------------------------------------------------------------------
 if needs_topgrade_update; then
     info "Installing/Upgrading Topgrade (desired: $REQUIRED_TOPGRADE_VERSION)…"
     deb-get install topgrade
@@ -57,15 +81,14 @@ if needs_topgrade_update; then
 else
     info "Topgrade already at required version – skipping install."
 fi
-
 info "Running Topgrade to upgrade the system …"
 topgrade --yes
-# -------------------------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------
 # 9️⃣  Final summary
-# -------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------
 info "All components are now installed and, all tests passed successfully!"
-#  🔄  Reboot prompt – now or later?
-# -------------------------------------------------------------------------------------------------
+# 🔄  Reboot prompt – now or later?
 echo
 info "The installation is finished. A reboot is recommended to apply all changes."
 read -rp "Reboot now? (y/N) " REBOOT_CHOICE
