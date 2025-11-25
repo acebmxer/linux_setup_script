@@ -39,13 +39,37 @@ ensure_deb_get_installed() {
         info "deb‑get is already installed."
     fi
 }
+# -----------------------------------------------------------------
+# 1️⃣  Timezone
+# -----------------------------------------------------------------
+info "Setting timezone to America/New_York …"
+run_as_root ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+run_as_root dpkg-reconfigure -f noninteractive tzdata
+# -----------------------------------------------------------------
+# 3️⃣  Dotfiles – install once
+# -----------------------------------------------------------------
+info "Starting as regular user"
+git clone https://github.com/flipsidecreations/dotfiles.git
+cd dotfiles
+./install.sh
+chsh -s /bin/zsh
+# -----------------------------------------------------------------
+#    Dotfiles - Install for root
+# -----------------------------------------------------------------
+sudo -s <<EOF
+info "Now running as root"
+git clone https://github.com/flipsidecreations/dotfiles.git
+cd dotfiles
+./install.sh
+chsh -s /bin/zsh
+EOF
+infosudo "Back to regular user."
 # Call the helper before any topgrade logic
 ensure_deb_get_installed
-
 # ------------------------------------------------------------------
 # Desired Topgrade version
 # ------------------------------------------------------------------
-REQUIRED_TOPGRADE_VERSION="2.3.0"
+REQUIRED_TOPGRADE_VERSION="16.0.4-1"
 
 # ------------------------------------------------------------------
 # Helper to decide if an update is needed
