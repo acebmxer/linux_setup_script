@@ -181,7 +181,6 @@ ensure_installer() {
 # --------------------------------------------------------------
 mount_iso
 ensure_installer
-remove_conflicting_packages
 info "Running the XCP‑NG installer script..."
 run_as_root bash /mnt/Linux/install.sh
 # Unmount the ISO (best effort)
