@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 # ────────────────────────────────────────────────────────
 # 1️⃣ Helpers – keep the same colour‑coded log functions
 # ────────────────────────────────────────────────────────
@@ -8,7 +7,6 @@ run_as_root() { sudo -E "$@"; }
 info()        { printf '\e[32m[INFO]\e[0m %s\n' "$*"; }
 warn()        { printf '\e[33m[WARN]\e[0m %s\n' "$*"; }
 error()       { printf '\e[31m[ERROR]\e[0m %s\n' "$*" >&2; }
-
 # ────────────────────────────────────────────────────────
 # 2️⃣ Idempotency helper
 # ────────────────────────────────────────────────────────
@@ -16,7 +14,6 @@ needs_update() {
 local flag_file="$1"
 [[ ! -f "$flag_file" ]] && return 0 || return 1
 }
-
 # ────────────────────────────────────────────────────────
 # 3️⃣ Timezone – only set if not already America/New_York
 # ────────────────────────────────────────────────────────
@@ -29,7 +26,6 @@ run_as_root dpkg-reconfigure -f noninteractive tzdata
 else
 info "Timezone already set to America/New_York – skipping."
 fi
-
 # ────────────────────────────────────────────────────────
 # 4️⃣ Ensure deb-get is installed
 # ────────────────────────────────────────────────────────
@@ -46,7 +42,6 @@ info "deb-get is already installed."
 fi
 }
 ensure_deb_get_installed
-
 # ────────────────────────────────────────────────────────
 # 5️⃣ Dotfiles – install for the regular user
 # ────────────────────────────────────────────────────────
@@ -72,11 +67,9 @@ info "Back to regular user."
 # ────────────────────────────────────────────────────────
 info "Running a quick apt‑update before topgrade."
 run_as_root apt-get update
-
 # ────────────────────────────────────────────────────────
 # 8️⃣ System install – Topgrade (idempotent)
 # ────────────────────────────────────────────────────────
-
 # Check if topgrade is installed
 deb-get show topgrade | awk '/Installed:/{if ($2 == "Yes") {exit 0} else {exit 1}}'
 if [ $? -ne 0 ]; then
@@ -85,13 +78,11 @@ if [ $? -ne 0 ]; then
 else
   info "Topgrade already installed."
 fi
-
 deb-get upgrade topgrade
 info "Topgrade already up‑to‑date."
 info "Running topgrade …"
 # Run as the user; Topgrade will auto‑install missing packages
 topgrade
-
 # ────────────────────────────────────────────────────────
 # 9️⃣ xen‑guest‑utilities – install / upgrade (root)
 # ────────────────────────────────────────────────────────
@@ -108,19 +99,21 @@ case "$ans" in
 y|Y|yes|Yes)
 info "Uninstalling existing xe-guest-utilities..."
 run_as_root apt-get purge -y xe-guest-utilities || warn "Failed to remove xe-guest-utilities."
+return 0  # Successful uninstall
 ;;
 *)
 info "Keeping existing xe-guest-utilities; skipping installation."
-return 1    # Signal: do not install
+return 1  # Indicate failure to proceed
 ;;
 esac
 else
 info "xe-guest-utilities is not installed."
-fi
 return 0        # Signal: install
+fi
 }
+
 # --------------------------------------------------------------
-# NEW: Check / uninstall / keep `xen-guest-agent`
+# NEW: Check / uninstall / keep xen‑guest‑agent
 # --------------------------------------------------------------
 check_and_handle_xen_guest_agent() {
 if dpkg -s xen-guest-agent > /dev/null 2>&1; then
@@ -131,35 +124,40 @@ case "$ans" in
 y|Y|yes|Yes)
 info "Uninstalling existing xen-guest-agent..."
 run_as_root apt-get purge -y xen-guest-agent || warn "Failed to remove xen-guest-agent."
+return 0  # Successful uninstall
 ;;
 *)
 info "Keeping existing xen-guest-agent; skipping installation."
-return 1    # Signal: do not install
+return 1  # Indicate failure to proceed
 ;;
 esac
 else
 info "xen-guest-agent is not installed."
-fi
 return 0        # Signal: install
+fi
 }
+
 # --------------------------------------------------------------
-# 5️⃣  XCP‑NG Tools – conflict‑free install
-# --------------------------------------------------------------
-info "Installing XCP‑NG Tools …"
-# --------------------------------------------------------------
-# 1️⃣  Check / uninstall / keep xe‑guest‑tools
+# Install XEN tools
 # --------------------------------------------------------------
 if ! check_and_handle_xe_guest_tools; then
 info "Installation aborted – leaving existing xe-guest-utilities intact."
 exit 0
 fi
+
 # --------------------------------------------------------------
-# 1.5️⃣ Check / uninstall / keep xen‑guest‑agent
+# Install XEN tools
 # --------------------------------------------------------------
 if ! check_and_handle_xen_guest_agent; then
 info "Installation aborted – leaving existing xen-guest-agent intact."
 exit 0
 fi
+
+# --------------------------------------------------------------
+# Install XEN tools
+# --------------------------------------------------------------
+info "Continuing with the rest of the installation..."
+# Rest of the script continues here
 # --------------------------------------------------------------
 # 2️⃣  Mount the ISO if it isn’t already mounted
 # --------------------------------------------------------------
