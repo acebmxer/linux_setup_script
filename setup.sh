@@ -76,7 +76,8 @@ clear
 printc "$HEADER" "To begin select of 1 of 3 options."
 printc "$OPTION" "1.  To install without Docker."
 printc "$OPTION" "2.  To install with Docker"
-printc "$OPTION" "3.  To make no changes and Exit."
+printc "$OPTION" "3.  To install or update Xen Tools."
+printc "$OPTION" "4.  To make no changes and Exit."
 echo
 
 # Prompt (in bold)
@@ -100,6 +101,12 @@ case "$choice" in
         ./setup_with_docker.sh
         ;;
     3)
+        printc "$SUCCESS" "To install or update Xen Tools."
+        printc "$SUCCESS" "Running install_xen_tools.sh ..."
+        chmod +x ./install_xen_tools.sh
+        ./install_xen_tools.sh
+        ;;
+    4)
         printc "$PROMPT" "You chose: exit. No changes will be made."
         exit 0
         ;;
