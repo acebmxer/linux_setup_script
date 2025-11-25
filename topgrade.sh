@@ -43,5 +43,5 @@ else
 fi
 info "Running topgrade …"
 # Run as the user; Topgrade will auto‑install missing packages
-topgrade -y
+topgrade --yes --cleanup
 exit 0
