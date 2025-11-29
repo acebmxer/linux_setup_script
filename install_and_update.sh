@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 # ────────────────────────────────────────────────────────
 # 1️⃣ Helpers – keep the same colour‑coded log functions
 # ────────────────────────────────────────────────────────
@@ -8,7 +7,6 @@ run_as_root() { sudo -E "$@"; }
 info()        { printf '\e[32m[INFO]\e[0m %s\n' "$*"; }
 warn()        { printf '\e[33m[WARN]\e[0m %s\n' "$*"; }
 error()       { printf '\e[31m[ERROR]\e[0m %s\n' "$*" >&2; }
-
 # ────────────────────────────────────────────────────────
 # 2️⃣ Idempotency helper
 # ────────────────────────────────────────────────────────
@@ -19,64 +17,50 @@ local flag_file="$1"
 # ────────────────────────────────────────────────────────
 # Install prereq for timezone change.
 # ────────────────────────────────────────────────────────
-run_as_root apt-get update && sudo apt-get install jq tzdata
+run_as_root apt-get update && sudo apt-get install jq tzdata -y
 # ────────────────────────────────────────────────────────
 # 3️⃣ Timezone  - change the timezone
 # ────────────────────────────────────────────────────────
 # TARGET_TZ="/usr/share/zoneinfo/America/New_York"
 LOCALTIME="/etc/localtime"
-
 # Get current timezone
 current_tz=$(readlink -f "$LOCALTIME" | sed 's/^\/usr\/share\/zoneinfo\///')
-
 # Prompt the user
 read -p "Your current timezone is $current_tz. Do you want to change it? (y/n): " choice
-
 case "$choice" in
   [yY])
     # Get a list of available timezones
     python_output=$(
-<details type="code_interpreter" done="true" output="{&quot;stdout&quot;: null, &quot;stderr&quot;: &quot;PythonError: Traceback (most recent call last):\n  File \&quot;/lib/python313.zip/_pyodide/_base.py\&quot;, line 597, in eval_code_async\n    await CodeRunner(\n          ~~~~~~~~~~^\n        source,\n        ^^^^^^^\n    ...&lt;5 lines&gt;...\n        optimize=optimize,\n        ^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \&quot;/lib/python313.zip/_pyodide/_base.py\&quot;, line 285, in __init__\n    self.ast = next(self._gen)\n               ~~~~^^^^^^^^^^^\n  File \&quot;/lib/python313.zip/_pyodide/_base.py\&quot;, line 149, in _parse_and_compile_gen\n    mod = compile(source, filename, mode, flags | ast.PyCF_ONLY_AST)\n  File \&quot;&lt;exec&gt;\&quot;, line 7\n    &lt;/code_interpreter)\n                      ^\nSyntaxError: unmatched &#x27;)&#x27;\n&quot;, &quot;result&quot;: null}">
-<summary>Analyzed</summary>
-```python
-
+      python3 -c '
 import zoneinfo
 import json
-
 timezones = sorted(list(zoneinfo.available_timezones()))
 print(json.dumps(timezones))
-</code_interpreter)
-
+      '
+    )
     timezones=$(echo "$python_output" | jq -c '.[]')
-
     echo "Available timezones:"
     echo "$timezones" | while read -r tz; do
       echo "  - $tz"
     done
-
     read -p "Enter the timezone you want to set (e.g., America/Los_Angeles): " new_tz
-
     if [[ -z "$new_tz" ]]; then
         error "No timezone entered. Aborting."
         exit 1
     fi
-
     # Validate timezone (optional, but recommended)
     if ! zoneinfo --exists "$new_tz" > /dev/null 2>&1; then
         error "Invalid timezone: $new_tz"
         exit 1
     fi
-    
-    run_as_root ln -fs "$new_tz" "$LOCALTIME"
-    run_as_root dpkg-reconfigure -f noninteractive tzdata
-    info "Timezone set to $new_tz."
-
+    run_as_root "ln -sf /usr/share/zoneinfo/$new_tz $LOCALTIME"
+    info "Timezone set to $new_tz"
     ;;
   [nN])
     info "Timezone change skipped."
     ;;
   *)
-    error "Invalid choice. Please enter 'y' or 'n'."
+    error "Invalid choice. Please answer 'y' or 'n'."
     exit 1
     ;;
 esac
