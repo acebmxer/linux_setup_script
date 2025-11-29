@@ -35,8 +35,7 @@ info "deb-get not found – installing prerequisites."
 run_as_root apt-get update
 run_as_root apt-get install -y curl lsb-release wget
 info "Installing deb-get."
-curl -sL https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get | \
-run_as_root -E bash -s install deb-get
+curl -sL https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get | sudo -E bash -s install deb-get
 else
 info "deb-get is already installed."
 fi
