@@ -15,6 +15,12 @@ local flag_file="$1"
 [[ ! -f "$flag_file" ]] && return 0 || return 1
 }
 # ────────────────────────────────────────────────────────
+# Delete default Ubuntu user account
+# ────────────────────────────────────────────────────────
+warning Deleting the default Ubuntu user account
+run_as_root userdel ubuntu
+warning The default Ubuntu user account has been delete 
+# ────────────────────────────────────────────────────────
 # 3️⃣ Timezone – only set if not already America/New_York
 # ────────────────────────────────────────────────────────
 TARGET_TZ="/usr/share/zoneinfo/America/New_York"
