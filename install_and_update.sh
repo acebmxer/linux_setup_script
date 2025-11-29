@@ -48,11 +48,6 @@ print(json.dumps(timezones))
         error "No timezone entered. Aborting."
         exit 1
     fi
-    # Validate timezone (optional, but recommended)
-    if ! zoneinfo --exists "$new_tz" > /dev/null 2>&1; then
-        error "Invalid timezone: $new_tz"
-        exit 1
-    fi
     run_as_root "ln -sf /usr/share/zoneinfo/$new_tz $LOCALTIME"
     info "Timezone set to $new_tz"
     ;;
