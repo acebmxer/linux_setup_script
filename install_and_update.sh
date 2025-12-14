@@ -61,11 +61,32 @@ PY
                 fi
                 read -r -p "Enter the timezone you want to set (e.g., America/Los_Angeles): " new_tz
                 if [[ -z "$new_tz" ]]; then
-                    error "No timezone entered. Aborting."
-                    exit 1
+                    error "No timezone entered. Aborting timezone change."
+                    break
                 fi
-                run_as_root ln -sf "/usr/share/zoneinfo/$new_tz" "$LOCALTIME"
-                info "Timezone set to $new_tz"
+                # Prefer timedatectl when available (systemd systems)
+                if command -v timedatectl >/dev/null 2>&1; then
+                    if timedatectl list-timezones | grep -qxF "$new_tz"; then
+                        if run_as_root timedatectl set-timezone "$new_tz"; then
+                            info "Timezone set to $new_tz via timedatectl"
+                        else
+                            warn "timedatectl failed to set timezone $new_tz"
+                        fi
+                    else
+                        error "Timezone '$new_tz' not found in timedatectl list. Aborting timezone change."
+                    fi
+                else
+                    # Fallback to /usr/share/zoneinfo symlink — validate first
+                    if [[ -f "/usr/share/zoneinfo/$new_tz" ]]; then
+                        if run_as_root ln -sf "/usr/share/zoneinfo/$new_tz" "$LOCALTIME"; then
+                            info "Timezone set to $new_tz"
+                        else
+                            warn "Failed to set /etc/localtime to $new_tz"
+                        fi
+                    else
+                        error "Timezone '/usr/share/zoneinfo/$new_tz' does not exist. Aborting timezone change."
+                    fi
+                fi
                 ;;
             [nN])
                 info "Timezone change skipped."
