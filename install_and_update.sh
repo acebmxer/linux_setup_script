@@ -196,92 +196,39 @@ fi
 # 2️⃣  Mount the ISO if it isn’t already mounted
 # --------------------------------------------------------------
 mount_iso() {
-    local mount_point="/mnt"
-    if mountpoint -q "$mount_point"; then
-        info "ISO already mounted at $mount_point."
+    if mountpoint -q /mnt; then
+        info "ISO already mounted at /mnt."
     else
-        if [[ "$NONINTERACTIVE" -eq 1 ]]; then
-          error "ISO not mounted and running non-interactive; cannot continue."
-          exit 1
-        fi
-        warn "ISO not mounted. Attempting to mount the XCP‑NG ISO (will prompt if needed)."
-        # If the user supplied an ISO path via XCP_ISO, try loop-mounting it first
-        if [[ -n "${XCP_ISO:-}" && -f "$XCP_ISO" ]]; then
-            info "Mounting ISO file $XCP_ISO on $mount_point"
-            run_as_root mkdir -p "$mount_point"
-            run_as_root mount -o loop,ro "$XCP_ISO" "$mount_point" || { warn "Failed to loop-mount $XCP_ISO"; }
-        fi
-
-        # Try common device nodes if not mounted yet
-        if ! mountpoint -q "$mount_point"; then
-            read -rp "Please insert the XCP‑NG ISO (or press Enter to try /dev/cdrom,/dev/sr0) and press Enter to continue…" _dummy
-            for dev in /dev/cdrom /dev/sr0 /dev/hdc; do
-                if [[ -e "$dev" ]]; then
-                    info "Trying to mount $dev on $mount_point"
-                    run_as_root mkdir -p "$mount_point"
-                    if run_as_root mount "$dev" "$mount_point" 2>/dev/null; then
-                        break
-                    fi
-                fi
-            done
-        fi
-
-        # If still not mounted, ask the user for a device or file path
-        if ! mountpoint -q "$mount_point"; then
-            read -rp "Mount failed. Enter device (e.g. /dev/sr0) or ISO file path to try: " choice
-            if [[ -z "$choice" ]]; then
-                error "No device or ISO provided. Aborting."
-                exit 1
-            fi
-            if [[ -f "$choice" ]]; then
-                run_as_root mkdir -p "$mount_point"
-                run_as_root mount -o loop,ro "$choice" "$mount_point" || { error "Failed to loop-mount $choice"; exit 1; }
-            else
-                run_as_root mkdir -p "$mount_point"
-                run_as_root mount "$choice" "$mount_point" || { error "Failed to mount $choice"; exit 1; }
-            fi
-        fi
-
-        if ! mountpoint -q "$mount_point"; then
-            error "Mounting ISO failed."
+        warn "ISO not mounted. Please insert the XCP‑NG ISO and press Enter to continue…"
+        read -r
+        run_as_root mount /dev/cdrom /mnt || { error "Failed to mount /dev/cdrom"; exit 1; }
+        if ! mountpoint -q /mnt; then
+            error "Mounting /dev/cdrom failed."
             exit 1
         fi
-        info "ISO mounted successfully at $mount_point."
+        info "ISO mounted successfully."
     fi
-    echo "$mount_point"
 }
 # --------------------------------------------------------------
 # 3️⃣  Make sure the installer script is present
 # --------------------------------------------------------------
 ensure_installer() {
-    local mp="$1"
-    local exact="$mp/Linux/install.sh"
-    if [[ -f "$exact" ]]; then
-        echo "$exact"
-        return 0
+    if [[ ! -f /mnt/Linux/install.sh ]]; then
+        error "Installer script /mnt/Linux/install.sh not found."
+        error "Make sure the ISO is correctly mounted and contains the installer."
+        exit 1
     fi
-
-    # Try a case-insensitive search for install.sh under the mount point (limited depth)
-    installer_path=$(find "$mp" -maxdepth 4 -type f -iname 'install.sh' -print -quit 2>/dev/null || true)
-    if [[ -n "${installer_path:-}" ]]; then
-        warn "Did not find $exact; using discovered installer: $installer_path"
-        echo "$installer_path"
-        return 0
-    fi
-
-    error "Installer script $mp/Linux/install.sh not found."
-    error "Make sure the ISO is correctly mounted and contains the installer."
-    exit 1
 }
 # --------------------------------------------------------------
 # 5️⃣  Run the installation
 # --------------------------------------------------------------
-mp=$(mount_iso)
-installer=$(ensure_installer "$mp")
-info "Running the XCP‑NG installer script: $installer"
-run_as_root bash "$installer"
+mount_iso
+ensure_installer
+remove_conflicting_packages
+info "Running the XCP‑NG installer script..."
+run_as_root bash /mnt/Linux/install.sh
 # Unmount the ISO (best effort)
-run_as_root umount "$mp" || warn "Failed to unmount $mp – you may need to unmount it manually."
+run_as_root umount /mnt || warn "Failed to unmount /mnt – you may need to unmount it manually."
 # Wait a bit so the system settles
 info "Pausing for 10 seconds to let services start..."
 sleep 10
