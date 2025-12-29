@@ -312,6 +312,7 @@ fi
 
 info "Running topgrade as invoking user (it may request credentials for some actions)"
 run_as_user "topgrade -y" || warn "topgrade encountered issues or some steps failed"
+run_as_user "topgrade -c" || warn "topgrade encountered issues or some steps failed"
 warn "The system is fully updated and may need a reboot to apply changes."
 # ────────────────────────────────────────────────────────
 # 10️⃣ Ask the user if they want to reboot
