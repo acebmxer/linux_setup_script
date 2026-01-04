@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
+log_file="/var/log/xcp-ng-install.log"
+exec > >(tee -a "$log_file") 2>&1
 
 # ────────────────────────────────────────────────────────
 # Helpers – colour‑coded log functions
 # ────────────────────────────────────────────────────────
 run_as_root() { sudo -E bash -c "$*"; }
 run_as_user() { local user="${SUDO_USER:-${USER}}"; sudo -u "$user" -H bash -c "$*"; }
-info()  { printf '\e[32m[INFO]\e[0m %s\n' "$*"; }
-warn()  { printf '\e[33m[WARN]\e[0m %s\n' "$*"; }
-error() { printf '\e[31m[ERROR]\e[0m %s\n' "$*" >&2; }
+info()  { printf '\e[32m[INFO]\e[0m %s\n' "$*" | tee -a "$log_file"; }
+warn()  { printf '\e[33m[WARN]\e[0m %s\n' "$*" | tee -a "$log_file"; }
+error() { printf '\e[31m[ERROR]\e[0m %s\n' "$*" >&2 | tee -a "$log_file"; }
 # ────────────────────────────────────────────────────────
 # 2️⃣ Idempotency helper
 # ────────────────────────────────────────────────────────
