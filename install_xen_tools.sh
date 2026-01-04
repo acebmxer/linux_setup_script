@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-log_file="/var/log//var/log/linux_setup_script.log"
+log_file="/var/log/linux_setup_script.log"
 exec > >(tee -a "$log_file") 2>&1
 # ==========================================================
 # install_xen_tools.sh   (extracted from flipsidebootstrap)
