@@ -5,9 +5,11 @@ mkdir -p "$log_dir" || { echo "Failed to create log directory"; exit 1; }
 log_file="$log_dir/linux_setup_script_$(date +%Y-%m-%d_%H-%M-%S).log"
 exec > >(tee -a "$log_file") 2>&1
 
+#-------------------------------------------------------------
 # Keep only the 5 most recent log files
+#-------------------------------------------------------------
 cd 'log' || { echo "Failed to change to log directory"; exit 1; }
-ls -t linux_setup_script_*.log | tail -n +6 | xargs -r rm
+find . -maxdepth 1 -name "linux_setup_script_*.log" -type f | sort -r | tail -n +6 | xargs -r rm
 cd ..
 #-------------------------------------------------------------
 #   Helper Fucntions
