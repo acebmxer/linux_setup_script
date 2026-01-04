@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-log_dir="$(dirname "$0")/log"
-log_file="$log_dir/linux_setup_script.log"
-exec > >(tee -a "$log_file") 2>&1
-
 # ────────────────────────────────────────────────────────
 # Helpers – colour‑coded log functions
 # ────────────────────────────────────────────────────────

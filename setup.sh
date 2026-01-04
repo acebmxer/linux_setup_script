@@ -2,8 +2,14 @@
 set -euo pipefail
 log_dir="$(dirname "$0")/log"
 mkdir -p "$log_dir" || { echo "Failed to create log directory"; exit 1; }
-log_file="$log_dir/linux_setup_script.log"
+log_file="$log_dir/linux_setup_script_$(date +%Y-%m-%d_%H-%M-%S).log"
 exec > >(tee -a "$log_file") 2>&1
+
+# Keep only the 5 most recent log files
+cd "$log_dir"
+ls -t linux_setup_script_*.log | tail -n +6 | xargs -r rm
+
+
 #-------------------------------------------------------------
 #   Helper Fucntions
 #-------------------------------------------------------------
@@ -88,6 +94,7 @@ printc() {
 # 5.  Show the menu (colourised)
 # -------------------------------------------------------------
 clear
+printc "$HEADER" "A log file as has been created /log/"$log_file" the 5 most recent logs will be kept."
 printc "$HEADER" "To begin select of 1 of 4 options."
 printc "$OPTION" "1.  To fully upgrade the system with Topgrade and Install xen-guest-utilities."
 printc "$OPTION" "2.  To install Docker"
