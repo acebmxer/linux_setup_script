@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 log_dir="$(dirname "$0")/log"
+mkdir -p "$log_dir" || { echo "Failed to create log directory"; exit 1; }
 log_file="$log_dir/linux_setup_script.log"
 exec > >(tee -a "$log_file") 2>&1
 #-------------------------------------------------------------
