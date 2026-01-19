@@ -74,11 +74,13 @@ printc() {
 # -------------------------------------------------------------
 clear
 printc "$HEADER" "To begin select of 1 of 4 options."
-printc "$OPTION" "1.  To fully upgrade the system with Topgrade and Install xen-guest-utilities."
-printc "$OPTION" "2.  To install Docker"
-printc "$OPTION" "3.  To install or update xen-guest-utilities."
-printc "$OPTION" "4.  To update your system"
-printc "$OPTION" "5.  To make no changes and Exit."
+printc "$OPTION" "1.  To fully upgrade the system and Install xen-guest-utilities."
+printc "$OPTION" "2.  To fully upgrade the system with Topgrade and Install xen-guest-utilities."
+printc "$OPTION" "3.  To install Docker"
+printc "$OPTION" "4.  To install or update xen-guest-utilities."
+printc "$OPTION" "5.  To update your system"
+printc "$OPTION" "6.  To update your system with Topgrade."
+printc "$OPTION" "7.  To make no changes and Exit."
 echo
 
 # Prompt (in bold)
@@ -90,30 +92,42 @@ read -r choice
 # -------------------------------------------------------------
 case "$choice" in
     1)
+        printc "$SUCCESS" "You choose: To fully upgrade the system and Install xen-guest-utilities."
+        printc "$SUCCESS" "Running install_and_update_notopgrade.sh ..."
+        chmod +x ./install_and_update_notopgrade.sh
+        ./install_and_update_notopgrade.sh
+        ;;
+    2)
         printc "$SUCCESS" "You choose: To fully upgrade the system with Topgrade and Install xen-guest-utilities."
         printc "$SUCCESS" "Running install_and_update.sh ..."
         chmod +x ./install_and_update.sh
         ./install_and_update.sh
         ;;
-    2)
+    3)
         printc "$SUCCESS" "You choose: To fully upgrade the system and install Docker."
         printc "$SUCCESS" "Running install_docker.sh ..."
         chmod +x ./install_docker.sh
         ./install_docker.sh
         ;;
-    3)
+    4)
         printc "$SUCCESS" "You choose: To install or update xen-guest-utilities."
         printc "$SUCCESS" "Running install_xen_tools.sh ..."
         chmod +x ./install_xen_tools.sh
         ./install_xen_tools.sh
         ;;
-    4)
+    5)
         printc "$SUCCESS" "You choose: To run updates on your system."
+        printc "$SUCCESS" "Running update.sh ..."
+        chmod +x ./update.sh
+        ./update.sh
+        ;;
+    6)
+        printc "$SUCCESS" "You choose: To run updates on your system with Topgrade."
         printc "$SUCCESS" "Running topgrade.sh ..."
         chmod +x ./topgrade.sh
         ./topgrade.sh
         ;;
-    5)
+    7)
         printc "$PROMPT" "You chose: exit. No changes will be made."
         exit 0
         ;;
