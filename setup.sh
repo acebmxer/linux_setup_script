@@ -93,15 +93,15 @@ read -r choice
 case "$choice" in
     1)
         printc "$SUCCESS" "You choose: To fully upgrade the system and Install xen-guest-utilities."
-        printc "$SUCCESS" "Running install_and_update_notopgrade.sh ..."
-        chmod +x ./install_and_update_notopgrade.sh
-        ./install_and_update_notopgrade.sh
-        ;;
-    2)
-        printc "$SUCCESS" "You choose: To fully upgrade the system with Topgrade and Install xen-guest-utilities."
         printc "$SUCCESS" "Running install_and_update.sh ..."
         chmod +x ./install_and_update.sh
         ./install_and_update.sh
+        ;;
+    2)
+        printc "$SUCCESS" "You choose: To fully upgrade the system with Topgrade and Install xen-guest-utilities."
+        printc "$SUCCESS" "Running install_and_update_topgrade.sh ..."
+        chmod +x ./install_and_update_topgrade.sh
+        ./install_and_update_togprade.sh
         ;;
     3)
         printc "$SUCCESS" "You choose: To fully upgrade the system and install Docker."

@@ -97,7 +97,39 @@ PY
         esac
     fi
 fi
-
+# ────────────────────────────────────────────────────────
+# 4️⃣ Ensure deb-get is installed
+# ────────────────────────────────────────────────────────
+ensure_deb_get_installed() {
+    if ! command -v deb-get >/dev/null 2>&1; then
+        info "deb-get not found – installing prerequisites."
+        run_as_root apt-get update
+        run_as_root apt-get install -y --no-install-recommends curl lsb-release wget || true
+        info "Downloading deb-get installer to /tmp/deb-get.sh"
+        tmp_script="/tmp/deb-get.sh"
+        curl -fsSL -o "$tmp_script" https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get || { warn "Failed to download deb-get installer"; return 1; }
+        run_as_root bash "$tmp_script" install deb-get || { warn "deb-get installer failed"; rm -f "$tmp_script"; return 1; }
+        rm -f "$tmp_script"
+    else
+        info "deb-get is already installed."
+    fi
+}
+ensure_deb_get_installed || warn "deb-get installation had issues"
+# ────────────────────────────────────────────────────────
+# 4️⃣ Ensure deb-get is installed
+# ────────────────────────────────────────────────────────
+ensure_deb_get_installed() {
+if ! command -v deb-get >/dev/null 2>&1; then
+info "deb-get not found – installing prerequisites."
+run_as_root apt-get update
+run_as_root apt-get install -y curl lsb-release wget
+info "Installing deb-get."
+curl -sL https://raw.githubusercontent.com/wimpysworld/deb-get/main/deb-get | sudo -E bash -s install deb-get
+else
+info "deb-get is already installed."
+fi
+}
+ensure_deb_get_installed
 # ────────────────────────────────────────────────────────
 # 5️⃣ Dotfiles – install for the regular user
 # ────────────────────────────────────────────────────────
@@ -264,11 +296,24 @@ info "Pausing for 10 seconds to let services start..."
 sleep 10
 info "XCP‑NG Tools installation completed."
 # ────────────────────────────────────────────────────────
-# 7️⃣ System Update / upgrade 
+# 7️⃣ System pre‑upgrade (optional but handy)
 # ────────────────────────────────────────────────────────
-info "Running apt update / full-upgrade / auto-remove."
-run_as_root apt-get update -y && run_as_root apt-get full-upgrade -y && run_as_root apt-get autoremove -y
+info "Running a quick apt‑update before topgrade."
+run_as_root apt-get update
 
+# System upgrade – Topgrade (idempotent)
+info "Installing/upgradeing topgrade via deb-get"
+if run_as_root deb-get install topgrade; then
+    info "Topgrade installed/updated via deb-get."
+else
+    warn "deb-get failed to install topgrade; attempting deb-get upgrade topgrade"
+    run_as_root deb-get upgrade topgrade || warn "Failed to upgrade topgrade via deb-get"
+fi
+
+info "Running topgrade as invoking user (it may request credentials for some actions)"
+run_as_user "topgrade -y" || warn "topgrade encountered issues or some steps failed"
+run_as_user "topgrade -c" || warn "topgrade encountered issues or some steps failed"
+warn "The system is fully updated and may need a reboot to apply changes."
 # ────────────────────────────────────────────────────────
 # 10️⃣ Ask the user if they want to reboot
 # ────────────────────────────────────────────────────────
