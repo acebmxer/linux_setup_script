@@ -95,8 +95,8 @@ printc() {
 # 5.  Show the menu (colourised)
 # -------------------------------------------------------------
 clear
-printc "$HEADER" "A log file as has been created /log/"$log_file" the 5 most recent logs will be kept."
-printc "$HEADER" "To begin select of 1 of 4 options."
+printc "$HEADER" "A log file as has been created /"$log_file" the 5 most recent logs will be kept."
+printc "$HEADER" "To begin select of 1 of 7 options."
 printc "$OPTION" "1.  To fully upgrade the system and Install xen-guest-utilities."
 printc "$OPTION" "2.  To fully upgrade the system with Topgrade and Install xen-guest-utilities."
 printc "$OPTION" "3.  To install Docker"
