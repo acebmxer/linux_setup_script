@@ -98,15 +98,17 @@ clear
 printc "$HEADER" "A log file as has been created "$log_file" the 5 most recent logs will be kept."
 printc "$HEADER" " "
 printc "$HEADER" " "
-printc "$HEADER" "To begin select of 1 of 3 options."
+printc "$HEADER" "To begin select of 1 of 5 options."
 printc "$HEADER" " "
-printc "$OPTION" "1.  Working with a VM."
-printc "$OPTION" "2.  Working with a real system."
-printc "$OPTION" "3.  To make no changes and Exit."
+printc "$OPTION" "1.  To fully upgrade the system and Install xen-guest-utilities."
+printc "$OPTION" "2.  To install Docker"
+printc "$OPTION" "3.  To install or update xen-guest-utilities."
+printc "$OPTION" "4.  To update your system"
+printc "$OPTION" "5.  To make no changes and Exit."
 echo
 
 # Prompt (in bold)
-printf "%bEnter choice [1-3]: %b" "$PROMPT" "$RESET"
+printf "%bEnter choice [1-5]: %b" "$PROMPT" "$RESET"
 read -r choice
 
 # -------------------------------------------------------------
@@ -114,18 +116,30 @@ read -r choice
 # -------------------------------------------------------------
 case "$choice" in
     1)
-        printc "$SUCCESS" "You choose: Work with a VM."
-        printc "$SUCCESS" "Running vm_setup.sh ..."
-        chmod +x ./vm_setup.sh
+        printc "$SUCCESS" "You choose: To fully upgrade the system and Install xen-guest-utilities."
+        printc "$SUCCESS" "Running install_and_update.sh ..."
+        chmod +x ./install_and_update.sh
         ./install_and_update.sh
         ;;
     2)
-        printc "$SUCCESS" "You choose: Work with a real system."
-        printc "$SUCCESS" "Running novm_setup.sh ..."
-        chmod +x ./novm_setup.sh
-        ./novm_setup.sh
+        printc "$SUCCESS" "You choose: To fully upgrade the system and install Docker."
+        printc "$SUCCESS" "Running install_docker.sh ..."
+        chmod +x ./install_docker.sh
+        ./install_docker.sh
         ;;
     3)
+        printc "$SUCCESS" "You choose: To install or update xen-guest-utilities."
+        printc "$SUCCESS" "Running install_xen_tools.sh ..."
+        chmod +x ./install_xen_tools.sh
+        ./install_xen_tools.sh
+        ;;
+    4)
+        printc "$SUCCESS" "You choose: To run updates on your system."
+        printc "$SUCCESS" "Running update.sh ..."
+        chmod +x ./update.sh
+        ./update.sh
+        ;;
+    5)
         printc "$PROMPT" "You chose: exit. No changes will be made."
         exit 0
         ;;
